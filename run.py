@@ -24,7 +24,9 @@ sys.path.append(root)
 from chatdev.chat_chain import ChatChain
 
 try:
-    from openai.types.chat.chat_completion_message_tool_call import ChatCompletionMessageToolCall
+    from openai.types.chat.chat_completion_message_tool_call import (
+        ChatCompletionMessageToolCall,
+    )
     from openai.types.chat.chat_completion_message import FunctionCall
 
     openai_new_api = True  # new openai api version
@@ -33,7 +35,8 @@ except ImportError:
     print(
         "Warning: Your OpenAI version is outdated. \n "
         "Please update as specified in requirement.txt. \n "
-        "The old API interface is deprecated and will no longer be supported.")
+        "The old API interface is deprecated and will no longer be supported."
+    )
 
 
 def get_config(company):
@@ -49,11 +52,7 @@ def get_config(company):
     config_dir = os.path.join(root, "CompanyConfig", company)
     default_config_dir = os.path.join(root, "CompanyConfig", "Default")
 
-    config_files = [
-        "ChatChainConfig.json",
-        "PhaseConfig.json",
-        "RoleConfig.json"
-    ]
+    config_files = ["ChatChainConfig.json", "PhaseConfig.json", "RoleConfig.json"]
 
     config_paths = []
 
@@ -69,19 +68,43 @@ def get_config(company):
     return tuple(config_paths)
 
 
-parser = argparse.ArgumentParser(description='argparse')
-parser.add_argument('--config', type=str, default="Default",
-                    help="Name of config, which is used to load configuration under CompanyConfig/")
-parser.add_argument('--org', type=str, default="DefaultOrganization",
-                    help="Name of organization, your software will be generated in WareHouse/name_org_timestamp")
-parser.add_argument('--task', type=str, default="Develop a basic Gomoku game.",
-                    help="Prompt of software")
-parser.add_argument('--name', type=str, default="Gomoku",
-                    help="Name of software, your software will be generated in WareHouse/name_org_timestamp")
-parser.add_argument('--model', type=str, default="GPT_3_5_TURBO",
-                    help="GPT Model, choose from {'GPT_3_5_TURBO', 'GPT_4', 'GPT_4_TURBO'}")
-parser.add_argument('--path', type=str, default="",
-                    help="Your file directory, ChatDev will build upon your software in the Incremental mode")
+parser = argparse.ArgumentParser(description="argparse")
+parser.add_argument(
+    "--config",
+    type=str,
+    default="Default",
+    help="Name of config, which is used to load configuration under CompanyConfig/",
+)
+parser.add_argument(
+    "--org",
+    type=str,
+    default="DefaultOrganization",
+    help="Name of organization, your software will be generated in WareHouse/name_org_timestamp",
+)
+parser.add_argument(
+    "--task",
+    type=str,
+    default="Develop a basic Gomoku game.",
+    help="Prompt of software",
+)
+parser.add_argument(
+    "--name",
+    type=str,
+    default="Gomoku",
+    help="Name of software, your software will be generated in WareHouse/name_org_timestamp",
+)
+parser.add_argument(
+    "--model",
+    type=str,
+    default="GPT_3_5_TURBO",
+    help="GPT Model, choose from {'GPT_3_5_TURBO', 'GPT_4', 'GPT_4_TURBO'}",
+)
+parser.add_argument(
+    "--path",
+    type=str,
+    default="",
+    help="Your file directory, ChatDev will build upon your software in the Incremental mode",
+)
 args = parser.parse_args()
 
 # Start ChatDev
@@ -90,30 +113,38 @@ args = parser.parse_args()
 #          Init ChatChain
 # ----------------------------------------
 config_path, config_phase_path, config_role_path = get_config(args.config)
-args2type = {'GPT_3_5_TURBO': ModelType.GPT_3_5_TURBO,
-             'GPT_4': ModelType.GPT_4,
-            #  'GPT_4_32K': ModelType.GPT_4_32k,
-             'GPT_4_TURBO': ModelType.GPT_4_TURBO,
-            #  'GPT_4_TURBO_V': ModelType.GPT_4_TURBO_V
-             }
+args2type = {
+    "GPT_3_5_TURBO": ModelType.GPT_3_5_TURBO,
+    "GPT_4": ModelType.GPT_4,
+    #  'GPT_4_32K': ModelType.GPT_4_32k,
+    "GPT_4_TURBO": ModelType.GPT_4_TURBO,
+    #  'GPT_4_TURBO_V': ModelType.GPT_4_TURBO_V
+    "llama3": ModelType.LLAMA3,
+}
 if openai_new_api:
-    args2type['GPT_3_5_TURBO'] = ModelType.GPT_3_5_TURBO_NEW
+    args2type["GPT_3_5_TURBO"] = ModelType.GPT_3_5_TURBO_NEW
 
-chat_chain = ChatChain(config_path=config_path,
-                       config_phase_path=config_phase_path,
-                       config_role_path=config_role_path,
-                       task_prompt=args.task,
-                       project_name=args.name,
-                       org_name=args.org,
-                       model_type=args2type[args.model],
-                       code_path=args.path)
+chat_chain = ChatChain(
+    config_path=config_path,
+    config_phase_path=config_phase_path,
+    config_role_path=config_role_path,
+    task_prompt=args.task,
+    project_name=args.name,
+    org_name=args.org,
+    model_type=args2type[args.model],
+    code_path=args.path,
+)
 
 # ----------------------------------------
 #          Init Log
 # ----------------------------------------
-logging.basicConfig(filename=chat_chain.log_filepath, level=logging.INFO,
-                    format='[%(asctime)s %(levelname)s] %(message)s',
-                    datefmt='%Y-%d-%m %H:%M:%S', encoding="utf-8")
+logging.basicConfig(
+    filename=chat_chain.log_filepath,
+    level=logging.INFO,
+    format="[%(asctime)s %(levelname)s] %(message)s",
+    datefmt="%Y-%d-%m %H:%M:%S",
+    encoding="utf-8",
+)
 
 # ----------------------------------------
 #          Pre Processing
